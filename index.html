@@ -1,331 +1,311 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Firebase CRM</title>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase CRM</title>
 
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-      }
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: Arial; }
 
-      body {
-        background: #f1f5f9;
-      }
+body { background:#f1f5f9; }
 
-      .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 220px;
-        height: 100%;
-        background: #5eb459;
-        color: white;
-        padding: 20px;
-      }
+.sidebar {
+  position:fixed;
+  left:0; top:0;
+  width:220px;
+  height:100%;
+  background:#5eb459;
+  color:white;
+  padding:20px;
+}
 
-      .main {
-        margin-left: 220px;
-        padding: 20px;
-        display: none;
-      }
+.main {
+  margin-left:220px;
+  padding:20px;
+  display:none;
+}
 
-      /* LOGIN */
-      #loginBox {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-      }
+#loginBox {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 
-      .loginCard {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        width: 300px;
-      }
+.loginCard {
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  width:260px;
+  text-align:center;
+}
 
-      /* CARD */
-      .card {
-        background: white;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-      }
+.card {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
 
-      input,
-      select {
-        width: 100%;
-        padding: 10px;
-        margin: 5px 0;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-      }
+input, select {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border:1px solid #ddd;
+  border-radius:6px;
+}
 
-      /* BUTTONS */
-      button {
-        padding: 10px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-top: 5px;
-      }
+button {
+  padding:8px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  margin:3px;
+}
 
-      .btn {
-        background: #5eb459;
-        color: white;
-      }
-      .gray {
-        background: #e2e8f0;
-      }
+.btn { background:#5eb459; color:white; }
+.gray { background:#e2e8f0; }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
+table {
+  width:100%;
+  border-collapse:collapse;
+}
 
-      th,
-      td {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-      }
+th, td {
+  padding:10px;
+  border-bottom:1px solid #eee;
+}
+</style>
+</head>
 
-      th {
-        background: #f8fafc;
-        text-align: left;
-      }
-    </style>
-  </head>
+<body>
 
-  <body>
-    <!-- LOGIN OVERLAY -->
-    <div id="loginBox">
-      <div class="loginCard">
-        <h3>Login Required</h3>
-        <button class="btn" id="loginBtn">Login with Google</button>
-        <button class="gray" id="logoutBtn">Logout</button>
-        <p id="statusText"></p>
-      </div>
-    </div>
+<!-- LOGIN -->
+<div id="loginBox">
+  <div class="loginCard">
+    <h3>Login Required</h3>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <h2>CRM</h2>
-    </div>
+    <button class="btn" id="loginBtn">Login with Google</button>
+    <button class="gray" id="logoutBtn">Logout</button>
 
-    <!-- MAIN -->
-    <div class="main">
-      <div class="card">
-        <h3>Search</h3>
-        <input id="searchBox" placeholder="Search..." onkeyup="render()" />
+    <p id="statusText">Not logged in</p>
+  </div>
+</div>
 
-        <select id="filterArea" onchange="render()">
-          <option value="">All Areas</option>
-          <option>ELA</option>
-          <option>LA</option>
-          <option>SGV</option>
-          <option>Other</option>
-        </select>
-      </div>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>CRM</h2>
+</div>
 
-      <div class="card">
-        <h3>Add Contact</h3>
+<!-- MAIN -->
+<div class="main">
 
-        <input id="firstName" placeholder="First Name" />
-        <input id="lastName" placeholder="Last Name" />
-        <input id="organization" placeholder="Org" />
-        <input id="phone" placeholder="Phone" />
-        <input id="email" placeholder="Email" />
+<div class="card">
+<h3>Add Contact</h3>
 
-        <input id="zip" placeholder="ZIP" />
-        <input id="city" placeholder="City" />
-        <input id="state" placeholder="State" />
+<input id="firstName" placeholder="First Name">
+<input id="lastName" placeholder="Last Name">
+<input id="organization" placeholder="Organization">
+<input id="phone" placeholder="Phone">
+<input id="email" placeholder="Email">
 
-        <select id="area">
-          <option value="">Area</option>
-          <option>ELA</option>
-          <option>LA</option>
-          <option>SGV</option>
-          <option>Other</option>
-        </select>
+<select id="area">
+  <option value="">Area</option>
+  <option>ELA</option>
+  <option>LA</option>
+  <option>SGV</option>
+  <option>Other</option>
+</select>
 
-        <button class="btn" onclick="saveContact()">Save Contact</button>
-        <button class="gray" onclick="clearForm()">Clear</button>
-      </div>
+<button class="btn" onclick="saveContact()">Save</button>
+<button class="gray" onclick="clearForm()">Clear</button>
+</div>
 
-      <div class="card">
-        <h3>Contacts</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Org</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th>Area</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="table"></tbody>
-        </table>
-      </div>
-    </div>
+<div class="card">
+<h3>Contacts</h3>
 
-    <!-- FIREBASE -->
-    <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-      import {
-        getFirestore,
-        collection,
-        addDoc,
-        getDocs,
-        deleteDoc,
-        updateDoc,
-        doc,
-      } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Org</th>
+<th>Phone</th>
+<th>Email</th>
+<th>Area</th>
+<th>Actions</th>
+</tr>
+</thead>
 
-      import {
-        getAuth,
-        signInWithPopup,
-        GoogleAuthProvider,
-        onAuthStateChanged,
-        signOut,
-      } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+<tbody id="table"></tbody>
+</table>
 
-      /* CONFIG */
-      const firebaseConfig = {
-        apiKey: 'AIzaSyDv9ocKNfQ5KmfDIH88Qke7KdcO0XYoyW4',
-        authDomain: 'conatcts-a62a6.firebaseapp.com',
-        projectId: 'conatcts-a62a6',
-        storageBucket: 'conatcts-a62a6.firebasestorage.app',
-        messagingSenderId: '8372784675',
-        appId: '1:8372784675:web:9e9fafc39558db9b792b96',
-      };
+</div>
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      const provider = new GoogleAuthProvider();
+</div>
 
-      /* =========================
-   WAIT FOR DOM (CRITICAL FIX)
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+import {
+  getAuth,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+apiKey: "AIzaSyDv9ocKNfQ5KmfDIH88Qke7KdcO0XYoyW4",
+  authDomain: "conatcts-a62a6.firebaseapp.com",
+  projectId: "conatcts-a62a6",
+  storageBucket: "conatcts-a62a6.firebasestorage.app",
+  messagingSenderId: "8372784675",
+  appId: "1:8372784675:web:9e9fafc39558db9b792b96"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+/* =========================
+   FIX MOBILE LOGIN
 ========================= */
-      window.addEventListener('DOMContentLoaded', () => {
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
+document.getElementById("loginBtn").onclick = async () => {
 
-        console.log('Buttons loaded:', loginBtn, logoutBtn);
+  const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
 
-        /* LOGIN */
-        loginBtn.addEventListener('click', async () => {
-          console.log('Login clicked');
+  if (isMobile) {
+    await signInWithRedirect(auth, provider);
+  } else {
+    await signInWithPopup(auth, provider);
+  }
+};
 
-          try {
-            const result = await signInWithPopup(auth, provider);
-            console.log('Logged in:', result.user.email);
-          } catch (err) {
-            console.error('LOGIN ERROR:', err);
-            alert(err.message);
-          }
-        });
+/* LOGOUT */
+document.getElementById("logoutBtn").onclick = async () => {
+  await signOut(auth);
+};
 
-        /* LOGOUT */
-        logoutBtn.addEventListener('click', async () => {
-          console.log('Logout clicked');
-          await signOut(auth);
-        });
-      });
+/* HANDLE REDIRECT LOGIN */
+getRedirectResult(auth)
+  .then(result => {
+    if (result?.user) {
+      console.log("Login success (redirect)", result.user);
+    }
+  })
+  .catch(err => console.log(err));
 
-      /* AUTH STATE */
-      onAuthStateChanged(auth, (user) => {
-        const loginBox = document.getElementById('loginBox');
-        const main = document.querySelector('.main');
-        const status = document.getElementById('statusText');
+/* AUTH STATE */
+onAuthStateChanged(auth, user => {
 
-        if (user) {
-          loginBox.style.display = 'none';
-          main.style.display = 'block';
-        } else {
-          loginBox.style.display = 'flex';
-          main.style.display = 'none';
-        }
+  if (user) {
+    document.getElementById("loginBox").style.display = "none";
+    document.querySelector(".main").style.display = "block";
+    document.getElementById("statusText").innerText = "Logged in: " + user.email;
+    render();
+  } else {
+    document.getElementById("loginBox").style.display = "flex";
+    document.querySelector(".main").style.display = "none";
+    document.getElementById("statusText").innerText = "Not logged in";
+  }
+});
 
-        if (status) {
-          status.innerText = user
-            ? `Logged in: ${user.email}`
-            : 'Not logged in';
-        }
-      });
+/* STATE */
+let editId = null;
 
-      /* STATE */
-      let editId = null;
+/* SAVE */
+window.saveContact = async function () {
 
-      /* SAVE */
-      window.saveContact = async function () {
-        let c = {
-          firstName: firstName.value,
-          lastName: lastName.value,
-          organization: organization.value,
-          phone: phone.value,
-          email: email.value,
-          zip: zip.value,
-          city: city.value,
-          state: state.value,
-          area: area.value,
-        };
+  let c = {
+    firstName:firstName.value,
+    lastName:lastName.value,
+    organization:organization.value,
+    phone:phone.value,
+    email:email.value,
+    area:area.value
+  };
 
-        if (editId) {
-          await updateDoc(doc(db, 'contacts', editId), c);
-          editId = null;
-        } else {
-          await addDoc(collection(db, 'contacts'), c);
-        }
+  if(editId){
+    await updateDoc(doc(db,"contacts",editId), c);
+    editId = null;
+  } else {
+    await addDoc(collection(db,"contacts"), c);
+  }
 
-        clearForm();
-        render();
-      };
+  clearForm();
+  render();
+};
 
-      /* CLEAR */
-      window.clearForm = function () {
-        document.querySelectorAll('input').forEach((i) => (i.value = ''));
-        area.value = '';
-        editId = null;
-      };
+/* CLEAR */
+window.clearForm = function(){
+  document.querySelectorAll("input").forEach(i=>i.value="");
+  area.value="";
+  editId=null;
+};
 
-      /* RENDER */
-      window.render = async function () {
-        const t = document.getElementById('table');
-        if (!t) return;
+/* EDIT */
+window.edit = function(id,c){
+  firstName.value=c.firstName;
+  lastName.value=c.lastName;
+  organization.value=c.organization;
+  phone.value=c.phone;
+  email.value=c.email;
+  area.value=c.area;
+  editId=id;
+};
 
-        t.innerHTML = '';
+/* DELETE */
+window.del = async function(id){
+  await deleteDoc(doc(db,"contacts",id));
+  render();
+};
 
-        let snapshot = await getDocs(collection(db, 'contacts'));
+/* RENDER */
+window.render = async function(){
 
-        snapshot.forEach((d) => {
-          let c = d.data();
+  let t = document.getElementById("table");
+  t.innerHTML = "";
 
-          t.innerHTML += `
+  let snap = await getDocs(collection(db,"contacts"));
+
+  snap.forEach(d => {
+
+    let c = d.data();
+
+    t.innerHTML += `
       <tr>
-        <td>${c.firstName} ${c.lastName}</td>
-        <td>${c.organization || ''}</td>
-        <td>${c.phone || ''}</td>
-        <td>${c.email || ''}</td>
-        <td>${c.area || ''}</td>
-        <td></td>
+        <td>${c.firstName||""} ${c.lastName||""}</td>
+        <td>${c.organization||""}</td>
+        <td>${c.phone||""}</td>
+        <td>${c.email||""}</td>
+        <td>${c.area||""}</td>
+        <td>
+          <button onclick='edit("${d.id}", ${JSON.stringify(c)})'>Edit</button>
+          <button onclick="del('${d.id}')">Delete</button>
+        </td>
       </tr>
     `;
-        });
-      };
+  });
+};
 
-      /* INIT */
-      render();
-    </script>
-  </body>
+</script>
+
+</body>
 </html>

@@ -2,80 +2,146 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Firebase CRM</title>
+<title>Contact Manager</title>
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family: Arial; }
+:root{
+  --lime:#5eb459;
+  --lime2:#7ddc78;
+}
 
-body { background:#f1f5f9; }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial;
+}
 
-.sidebar {
-  position:fixed;
-  left:0; top:0;
-  width:220px;
-  height:100%;
-  background:#5eb459;
+body{
+  min-height:100vh;
+  background: radial-gradient(circle at top, #1a2a1a, #070b14 60%);
   color:white;
-  padding:20px;
 }
 
-.main {
-  margin-left:220px;
-  padding:20px;
-  display:none;
-}
-
-#loginBox {
+/* LOGIN GLASS */
+#loginBox{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.5);
   display:flex;
   justify-content:center;
   align-items:center;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
 }
 
-.loginCard {
-  background:white;
+.loginCard{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  border-radius:18px;
   padding:20px;
-  border-radius:10px;
-  width:260px;
+  width:280px;
   text-align:center;
 }
 
-.card {
-  background:white;
+/* MAIN */
+.main{
+  display:none;
+  padding:25px;
+}
+
+/* CARDS */
+.card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(20px);
+  border-radius:18px;
   padding:15px;
-  border-radius:10px;
   margin-bottom:15px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
 }
 
-input, select {
+/* INPUTS */
+input, select{
   width:100%;
-  padding:10px;
-  margin:5px 0;
-  border:1px solid #ddd;
-  border-radius:6px;
+  padding:12px;
+  margin:6px 0;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.08);
+  color:white;
+  outline:none;
 }
 
-button {
-  padding:8px;
+input::placeholder{
+  color:rgba(255,255,255,0.6);
+}
+
+input:focus, select:focus{
+  border:1px solid var(--lime);
+  box-shadow:0 0 0 3px rgba(94,180,89,0.2);
+}
+
+/* BUTTONS */
+button{
+  padding:10px 14px;
   border:none;
-  border-radius:6px;
+  border-radius:12px;
   cursor:pointer;
+  font-weight:600;
   margin:3px;
 }
 
-.btn { background:#5eb459; color:white; }
-.gray { background:#e2e8f0; }
-
-table {
-  width:100%;
-  border-collapse:collapse;
+.btn{
+  background:linear-gradient(135deg,var(--lime),var(--lime2));
+  color:#07130a;
 }
 
-th, td {
+.gray{
+  background:rgba(255,255,255,0.1);
+  color:white;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 10px;
+}
+
+thead th{
+  text-align:left;
+  font-size:12px;
+  opacity:0.6;
   padding:10px;
-  border-bottom:1px solid #eee;
+}
+
+tbody tr{
+  background:rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+}
+
+td{
+  padding:12px;
+}
+
+tbody tr td:first-child{
+  border-radius:12px 0 0 12px;
+}
+
+tbody tr td:last-child{
+  border-radius:0 12px 12px 0;
+}
+
+/* ACTION BUTTONS */
+td button:first-child{
+  background:rgba(94,180,89,0.25);
+  color:#7ddc78;
+}
+
+td button:last-child{
+  background:rgba(255,80,80,0.15);
+  color:#ff8080;
 }
 </style>
 </head>
@@ -86,17 +152,9 @@ th, td {
 <div id="loginBox">
   <div class="loginCard">
     <h3>Login Required</h3>
-
     <button class="btn" id="loginBtn">Login with Google</button>
-    <button class="gray" id="logoutBtn">Logout</button>
-
     <p id="statusText">Not logged in</p>
   </div>
-</div>
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>CRM</h2>
 </div>
 
 <!-- MAIN -->
@@ -107,7 +165,6 @@ th, td {
 
 <input id="firstName" placeholder="First Name">
 <input id="lastName" placeholder="Last Name">
-<input id="organization" placeholder="Organization">
 <input id="phone" placeholder="Phone">
 <input id="email" placeholder="Email">
 
@@ -119,7 +176,7 @@ th, td {
   <option>Other</option>
 </select>
 
-<button class="btn" onclick="saveContact()">Save</button>
+<button class="btn" onclick="save()">Save</button>
 <button class="gray" onclick="clearForm()">Clear</button>
 </div>
 
@@ -130,7 +187,6 @@ th, td {
 <thead>
 <tr>
 <th>Name</th>
-<th>Org</th>
 <th>Phone</th>
 <th>Email</th>
 <th>Area</th>
@@ -148,7 +204,6 @@ th, td {
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
 import {
   getFirestore,
   collection,
@@ -169,7 +224,7 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-/* 🔥 FIREBASE CONFIG */
+/* CONFIG */
 const firebaseConfig = {
 apiKey: "AIzaSyDv9ocKNfQ5KmfDIH88Qke7KdcO0XYoyW4",
   authDomain: "conatcts-a62a6.firebaseapp.com",
@@ -184,69 +239,49 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-/* =========================
-   FIX MOBILE LOGIN
-========================= */
+let editId = null;
+
+/* LOGIN */
 document.getElementById("loginBtn").onclick = async () => {
-
-  const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
-
-  if (isMobile) {
+  const mobile = /iPhone|Android/i.test(navigator.userAgent);
+  if (mobile) {
     await signInWithRedirect(auth, provider);
   } else {
     await signInWithPopup(auth, provider);
   }
 };
 
-/* LOGOUT */
-document.getElementById("logoutBtn").onclick = async () => {
-  await signOut(auth);
-};
-
-/* HANDLE REDIRECT LOGIN */
-getRedirectResult(auth)
-  .then(result => {
-    if (result?.user) {
-      console.log("Login success (redirect)", result.user);
-    }
-  })
-  .catch(err => console.log(err));
+getRedirectResult(auth);
 
 /* AUTH STATE */
 onAuthStateChanged(auth, user => {
-
   if (user) {
     document.getElementById("loginBox").style.display = "none";
     document.querySelector(".main").style.display = "block";
-    document.getElementById("statusText").innerText = "Logged in: " + user.email;
+    document.getElementById("statusText").innerText = user.email;
     render();
   } else {
     document.getElementById("loginBox").style.display = "flex";
     document.querySelector(".main").style.display = "none";
-    document.getElementById("statusText").innerText = "Not logged in";
   }
 });
 
-/* STATE */
-let editId = null;
-
 /* SAVE */
-window.saveContact = async function () {
+window.save = async function () {
 
-  let c = {
+  let data = {
     firstName:firstName.value,
     lastName:lastName.value,
-    organization:organization.value,
     phone:phone.value,
     email:email.value,
     area:area.value
   };
 
   if(editId){
-    await updateDoc(doc(db,"contacts",editId), c);
+    await updateDoc(doc(db,"contacts",editId), data);
     editId = null;
   } else {
-    await addDoc(collection(db,"contacts"), c);
+    await addDoc(collection(db,"contacts"), data);
   }
 
   clearForm();
@@ -255,7 +290,10 @@ window.saveContact = async function () {
 
 /* CLEAR */
 window.clearForm = function(){
-  document.querySelectorAll("input").forEach(i=>i.value="");
+  firstName.value="";
+  lastName.value="";
+  phone.value="";
+  email.value="";
   area.value="";
   editId=null;
 };
@@ -264,7 +302,6 @@ window.clearForm = function(){
 window.edit = function(id,c){
   firstName.value=c.firstName;
   lastName.value=c.lastName;
-  organization.value=c.organization;
   phone.value=c.phone;
   email.value=c.email;
   area.value=c.area;
@@ -281,21 +318,19 @@ window.del = async function(id){
 window.render = async function(){
 
   let t = document.getElementById("table");
-  t.innerHTML = "";
+  t.innerHTML="";
 
   let snap = await getDocs(collection(db,"contacts"));
 
-  snap.forEach(d => {
-
-    let c = d.data();
+  snap.forEach(d=>{
+    let c=d.data();
 
     t.innerHTML += `
       <tr>
-        <td>${c.firstName||""} ${c.lastName||""}</td>
-        <td>${c.organization||""}</td>
-        <td>${c.phone||""}</td>
-        <td>${c.email||""}</td>
-        <td>${c.area||""}</td>
+        <td>${c.firstName} ${c.lastName}</td>
+        <td>${c.phone}</td>
+        <td>${c.email}</td>
+        <td>${c.area}</td>
         <td>
           <button onclick='edit("${d.id}", ${JSON.stringify(c)})'>Edit</button>
           <button onclick="del('${d.id}')">Delete</button>
